@@ -1,3 +1,6 @@
+// Barkema Fig 1.1의 비밀을 알아냈다. Finite Lattice에서 계산을 한 결과를 이용하는 것이었다.
+
+
 // * beta   = inverse temperature
 // * prob[] = array of acceptance probability
 // * s[]    = lattice of spins with helical boundary conditions
@@ -6,10 +9,9 @@
 #include <stdlib.h>
 #include <string>
 #include <iostream>
-
 using namespace std;
 
-#define L 2
+#define L 5
 #define N (L*L)
 #define XNN 1
 #define YNN L
@@ -19,10 +21,11 @@ using namespace std;
 
 int s[N];
 int count;
-int HH_c[16];
+int HH_c[N*N];
 double Z[bin];
+// double Z2[bin][N*N];
 double ZU[bin];
-
+// double ZU2[bin][N*N];
 
 // Function for prints spin configuration
 void print_s(){
@@ -38,59 +41,54 @@ void print_s(){
     cout << res << '\n';
 }
 
+// Fucntion that makes all spins up configuration
 void initialize(){
     int i;
     for(i = 0; i < N; i++)
         s[i] = 1;
 }
 
+// Function for calculate Hamiltonian
 int sweep(){
     int i, k;
-    int nn, sum, sigma = 0;
+    int nn, sum = 0, sigma = 0;
     int HH = 0;
     for(i = 0; i < N; i++){
-        // Periodical Boundary condition
-        if((nn = i + XNN)%L == 0) nn -= L;
-        sum = s[nn];
-        if(((nn = i - XNN)-1)%L == 0) nn += L;
-        sum += s[nn];
-        if((nn = i + YNN) >= N) nn -= N;
-        sum += s[nn];
-        if((nn = i - YNN) < 0) nn += N;
-        sum += s[nn];
-
-        // Helical Boundary condition
-
-        // if((nn = i + XNN) >= N) nn -= N;
-        // sum = s[nn];
-        // if((nn = i - XNN) <  0) nn += N;
-        // sum += s[nn];
-        // if((nn = i + YNN) >= N) nn -= N;
-        // sum += s[nn];
-        // if((nn = i - YNN) <  0) nn += N;
-        // sum += s[nn];
+        sum = 0;
+        if((nn = i + XNN)%L != 0)
+            sum += s[nn];
+        if(((nn = i - XNN)+1)%L != 0)
+            sum += s[nn];
+        if((nn = i + YNN) < N)
+            sum += s[nn];
+        if((nn = i - YNN) > 0)
+            sum += s[nn];
         
-        cout << sum << " " << i << endl;
+        // cout << sum << " " << i << endl;
         sigma += s[i];
         HH -= J*sum*s[i];
     }
-    
+    // cout << endl;
     HH -= sigma*B;
-    print_s();
-    cout << sigma << " " << HH << endl << endl;
+    // print_s();
+    // cout << sigma << " " << HH << endl << endl;
     for(k = 0; k < bin; k++){
         double Temp = 0.2*(k+1);
         ZU[k] += sigma*exp(-HH/Temp);
         Z[k] += exp(-HH/Temp);
+        // if(count==93)
+        //     cout << "&#& " << Z[k] << endl;
+        // if(isnan(Z[k])|| isnan(ZU[k])) cout << endl << "error " << k << " " << count << " " << HH << " " << Temp <<endl;
 
-        cout << sigma*exp(-HH/Temp) << " " << exp(-HH/Temp) << endl;
+        // cout << sigma*exp(-HH/Temp) << " " << exp(-HH/Temp) << endl;
     }
     return HH;
 }
 
 int calc(){
     // print_s();
-    HH_c[count] = sweep();
+    sweep();
+    // HH_c[count] = sweep();
     count++;
 
 }
@@ -126,7 +124,7 @@ void print_all(int* a, int len){
 int main(){
     initialize();
     generator_sym(0);
-    print_all(HH_c,16);
+    // print_all(HH_c,N*N);
     print_all(ZU,25);
     print_all(Z,25);
     cout << count << endl;

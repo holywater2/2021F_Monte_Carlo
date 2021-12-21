@@ -157,16 +157,29 @@ class Ising:
         plt.xlabel('Temperature T')
         plt.show()
 
-L55 = Ising(5)
+L55 = Ising(4)
 L55.generator_s()
 L55.calc()
-y = self.mag/max(self.mag)
+
+y = L55.mag/max(L55.mag)
 
 plt.style.use('seaborn-whitegrid')
 plt.ylim(0,1.1)
 plt.xlim(0,5)
-plt.plot(self.T,y)
+plt.plot(L55.T,y)
 
 plt.ylabel('Abosolute magnetization per spin m')
 plt.xlabel('Temperature T')
-plt.savefigshow()
+plt.savefig("L55_mag.png")
+
+plt.close()
+y = L55.spec/max(L55.spec)
+
+plt.style.use('seaborn-whitegrid')
+plt.ylim(0,1.1)
+plt.xlim(0,5)
+plt.plot(L55.T,y)
+
+plt.ylabel('Specific heat per spin m')
+plt.xlabel('Temperature T')
+plt.savefig("L55_spec.png")
