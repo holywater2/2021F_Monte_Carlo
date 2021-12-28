@@ -157,7 +157,7 @@ class Ising:
         plt.xlabel('Temperature T')
         plt.show()
 
-L55 = Ising(4)
+L55 = Ising(5)
 L55.generator_s()
 L55.calc()
 
