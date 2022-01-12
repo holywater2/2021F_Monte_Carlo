@@ -2,33 +2,47 @@
 // * prob[] = array of acceptance probability
 // * s[]    = lattice of spins with helical boundary conditions
 // * L      = const ant edge length of lattice
-#include <math.h>
-#include <stdlib.h>
-#include <string>
+
+// File & IO System
 #include <iostream>
-#include <tuple>
-#include <random>
 #include <fstream>
-#include <ctime>
+#include <windows.h>
+// Data Structure
 #include <vector>
+#include <tuple>
+#include <string>
+// Mathmatics
+#include <math.h>
+#include <random>
+// Etc.
+#include <stdlib.h>
+#include <ctime>
 
 using namespace std;
 
-#define L 100
+#define L 3 /*Parameter: lattice size*/
 #define N (L*L)
 #define XNN 1
 #define YNN L
 #define B 0
 #define J 1
-#define bin 40
+#define bin 25 /*Parametr: Change binning of temperature*/
+static string Filename = ".\\Result\\Metropolis_c_"+to_string(L)+"_int"+to_string(bin);
 
-static int s[N];
+static short s[N]; 
 static double prob[5]; // 1 1 exp 1 exp
+
 static random_device rd;  // Will be used to obtain a seed for the random number engine
 static mt19937 gen(rd()); // Standard mersenne_twister_engine seeded with rd()
 static uniform_real_distribution<> dis(0.0, 1.0);
+
 static int Fliped_Step;
 static int Total_Step;
+static bool isTinf;
+
+
+
+
 
 void prob_calc(double beta){
     int i;
@@ -39,8 +53,15 @@ void prob_calc(double beta){
 
 void initialize(double beta){
     int i;
+    // T = 0 start
     for(i = 0; i < N; i++){
-        s[i] = 1;
+        // T = 0 start
+        isTinf = false; 
+        s[i] = 1; 
+
+        // T = \inf start
+        isTinf = true;
+        if(isTinf) s[i] -= int(dis(gen)*2)*2;
     }
     prob_calc(beta);
 }
@@ -112,17 +133,35 @@ int main(){
     vector<double> m(bin);
     vector<double> c(bin);
     vector<vector<double>> res(bin,vector<double>(4,0));
+    string Tat = isTinf ? "inf" : "0";
+
+    cout << "Metropolis Algorithm\n";
+    cout << "L = " << L << ", " << "bin = " << bin << ", Start T at " << Tat << "\n";
+    cout << "-------------------------------------------------------------------------------------------" << "\n";
+    cout << "magnetization-----specific heat-----Fliped Step-----Total Step-----------------------------" << "\n";
+    cout << "-------------------------------------------------------------------------------------------" << "\n";
+
+    clock_t start, finish;
+    double duration;
+    start = clock();
 
     int sigma, HH;
 
-    for(int i = 0; i < bin; i++){
+    for(int i = 0; i < bin; i++){ // i is bin
         Fliped_Step = 0;
         Total_Step = 0;
         double T = (5/double(bin))*(i+1);
         double beta = 1/T;
 
         initialize(beta);
-        for(int j = 0; j < 2000; j++){
+
+        // Basic equlibrium time is almost 1000 so that twice of that is enough
+        int equil_time = 2000;
+
+        // Equilibrium time is larger when T is near Tc
+        if(T<2.4 || T>2.0) equil_time =10000;
+
+        for(int j = 0; j < equil_time; j++){ // j is epoch
             calculate();
         }
         value = measure();
@@ -131,8 +170,9 @@ int main(){
 
         cout <<"idx: " << i << "||" << sigma << " " << HH << "\n";
 
+        // Calculating result
         int epoch = 18000;
-        for(int j = 0; j < epoch; j++){
+        for(int j = 0; j < epoch; j++){ // j is epoch
             calculate();
             
             value = measure();
@@ -149,11 +189,28 @@ int main(){
         cout << m[i] << " " << c[i] << " " << Fliped_Step << " " << Total_Step << '\n';
     }
     
+
+    // Save the data (Not real time process)
     bool save = true;
 
-    if (save){
+    if(save){
+        CreateDirectory("Result", NULL);
         ofstream myfile;
-        myfile.open("Metropolis_c_"+to_string(L)+".csv");
+        string NewFilename = Filename + ".csv";
+        ifstream f(NewFilename);
+        int filenum = 1;
+        if(f.good()){
+            NewFilename = Filename + "_" + to_string(filenum++) + ".csv";
+            ifstream f(NewFilename);
+        }
+        while(true){
+            NewFilename = Filename + "_" + to_string(filenum++) + ".csv";
+            ifstream f(NewFilename);
+            if(!f.good()) break;
+        }
+
+        myfile.open(NewFilename);
+
         myfile << ",temperture,magnetization,specific heat,abs(sigma),sigma**2,HH,HH**2\n";
         for(int i = 0; i <bin; i++){
             string temp = to_string(i) + "," + to_string((5/double(bin))*(i+1)) + "," + to_string(m[i]) + "," + to_string(c[i]) + ",";
@@ -161,5 +218,9 @@ int main(){
             myfile << temp;
         }
         myfile.close();
+        cout << "Save Completed: " << NewFilename << "\n";
     }
+
+    finish = clock();
+    cout << "Program Exit. Spent time: " << (double)(finish-start)/CLOCKS_PER_SEC << "\n";
 }
