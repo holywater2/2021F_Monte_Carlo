@@ -22,7 +22,7 @@
 
 using namespace std;
 
-#define L 100
+#define L 512
 #define N (L*L)
 #define XNN 1
 #define YNN L
@@ -33,9 +33,8 @@ static string Filename = ".\\Result\\Wolff_c_"+to_string(L)+"_int"+to_string(bin
 
 
 #define _init 1.01
-#define Tstart 2.2
-#define Tfin 2.4
-
+#define Tstart 2.25
+#define Tfin 2.28
 
 static short s[N]; // Square lattice configuration of 2D Ising model
 
@@ -43,15 +42,14 @@ static string c; // Cluster cache of Wolff algorithm step
 static double prob; // Probability to add cluster
 
 static bool isTinf; // Indicator of whether T starts at inf or not (if T is inf, then intial s[N] start with random distribution)
-static int init;
 
 /* Random number generator */
 static random_device rd;  // Will be used to obtain a seed for the random number engine
 static mt19937 gen(rd()); // Standard mersenne_twister_engine seeded with rd()
 static uniform_real_distribution<> dis(0.0, 1.0);
 
-static int Fliped_Step;
-static int Total_Step;
+static long Fliped_Step;
+static long Total_Step;
 
 void prob_calc(double beta){
     prob = 1-exp(-2*beta*J);
@@ -110,57 +108,48 @@ vector<int> measure(){
     }
     
     HH = -res-B*sigma;
-
     return vector<int>({HH,sigma});
 }
 
-void flush_clsuster(){
-    c = string(N,'0');
-}
-
-int flip_cluster(){
-    int i, size = 0;
-    for(i = 0; i < N; i++){
-        if(c.at(i) == '1'){
-            Fliped_Step++;
-            size++;
-            s[i] = -s[i];
-        }
-    }
-    return size;
-}
-
-void clustering(int k, double padd = prob){
-    if(c.at(k) == '1') return;
-    else{
-        if((s[k] == init) && (dis(gen) < padd)) c.at(k) = '1';
-        else return;
-    }
-    int nn;
-    if((nn = k - XNN) < 0) nn += N;
-    clustering(nn);
-    if((nn = k + XNN) >= N) nn -= N;
-    clustering(nn);
-    if((nn = k - YNN) < 0) nn += N;
-    clustering(nn);
-    if((nn = k + YNN) >= N) nn -= N;
-    clustering(nn);
-}
-
 double calculate(){
-    int i, k, size = 0;
     /*In Wolff algorithm, each clustering and flipping process is one mcs*/
-    
+    int i, k, l, sp, cur, size = 0;
+    short snew, sold;
+    vector<int> stack(N);
+    vector<int> nn(4);
+
     /*k: Choosing random initial site of Wolff step */
     k = N*dis(gen);
     
-    flush_clsuster();
-    init = s[k];        
-    clustering(k,_init);
-    size += flip_cluster();
+    stack[0] = k;
+    sp = 1; // stack pointer
+    
+    sold = s[k];
+    snew = -s[k];
+    
+    s[k] = snew;
+
+    while(sp){
+        cur = stack[--sp];
+        if((nn[0] = cur - XNN) <  0) nn[0] += N;
+        if((nn[1] = cur + XNN) >= N) nn[1] -= N;
+        if((nn[2] = cur - YNN) <  0) nn[2] += N;
+        if((nn[3] = cur + YNN) >= N) nn[3] -= N;
+
+
+        for(l = 0; l < 4; l++){
+            if(s[nn[l]] == sold){
+                if(dis(gen) < prob){
+                    stack[sp++] = nn[l];
+                    s[nn[l]] = snew;
+                    Fliped_Step++;
+                    size++;
+                }
+            }
+        }
+    }
     
     Total_Step++;
-
     return size;
 }
 
@@ -185,6 +174,7 @@ int main(){
     int sigma, HH, equil_time, epoch;
     double T, beta;
 
+    
     for(int i = 0; i < bin; i++){ // i is bin
         Fliped_Step = 0;
         Total_Step = 0; 
@@ -194,21 +184,21 @@ int main(){
         initialize(beta);
 
         // Basic equlibrium time is almost 1000 so that twice of that is enough
-        equil_time = 2000;
+        equil_time = 20000;
 
-        // Equilibrium time is larger when T is near Tc
-        if(T<2.4 || T>2.0) equil_time =10000;
+        // // Equilibrium time is larger when T is near Tc
+        // if(T<2.4 || T>2.0) equil_time =10000;
 
         for(int j = 0; j < equil_time; j++){ // j is epoch
             calculate();
         }
         value = measure();
         HH = value[0];
-        sigma = value[1];
+        sigma = value[1]; 
         cout <<"idx: " << i << " || T/J=" << T << " |equi time passed| sig=" << sigma << " || H=" << HH << "\n";
 
         // Calculating result
-        epoch = 18000;
+        epoch = 180000;
         for(int j = 0; j < epoch; j++){ // j is epoch
             size[i] += calculate()/epoch;
             
@@ -226,6 +216,7 @@ int main(){
         cout << m[i] << " " << c[i] << " " << Fliped_Step << " " << Total_Step << '\n';
     }
     
+    cout.copyfmt(ios(NULL));
 
     // Save the data (It's NOT real time saving process)
     bool save = true;
