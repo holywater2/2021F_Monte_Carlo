@@ -20,29 +20,29 @@
 
 using namespace std;
 
-#define L 3 /*Parameter: lattice size*/
+#define L 5 /*Parameter: lattice size*/
 #define N (L*L)
 #define XNN 1
 #define YNN L
 #define B 0
 #define J 1
-#define bin 25 /*Parametr: Change binning of temperature*/
+#define bin 40 /*Parametr: Change binning of temperature*/
+
+#define Tstart 0
+#define Tfin 5
+
 static string Filename = ".\\Result\\Metropolis_c_"+to_string(L)+"_int"+to_string(bin);
 
-static short s[N]; 
+static short s[N]; // Square lattice configuration of 2D Ising model
 static double prob[5]; // 1 1 exp 1 exp
 
 static random_device rd;  // Will be used to obtain a seed for the random number engine
 static mt19937 gen(rd()); // Standard mersenne_twister_engine seeded with rd()
 static uniform_real_distribution<> dis(0.0, 1.0);
 
-static int Fliped_Step;
-static int Total_Step;
+static long Fliped_Step;
+static long Total_Step;
 static bool isTinf;
-
-
-
-
 
 void prob_calc(double beta){
     int i;
@@ -86,7 +86,6 @@ int helical(int i){
     
     if((nn = i + XNN) == N) nn = 0;
     sum = s[nn];
-
     if((nn = i + YNN) >= N) nn -= N;
     sum += s[nn];
 
@@ -107,11 +106,14 @@ vector<int> measure(){
     return vector<int>({HH,sigma});
 }
 
-int calculate(int n = N){
+void calculate(int n = N){
     int i, k, delta;
     double a;
     for(i = 0; i < n; i++){
+        // Sweep Randomly
         k = N*dis(gen);
+        // Sweep Sequential
+        // k = n
 
         delta = sweep_helical(k)*s[k];
         
@@ -132,7 +134,9 @@ int main(){
     vector<int> value;
     vector<double> m(bin);
     vector<double> c(bin);
-    vector<vector<double>> res(bin,vector<double>(4,0));
+    vector<double> cdelta(bin);
+    vector<double> T(bin);
+    vector<vector<double>> res(bin,vector<double>(5,0));
     string Tat = isTinf ? "inf" : "0";
 
     cout << "Metropolis Algorithm\n";
@@ -145,21 +149,30 @@ int main(){
     double duration;
     start = clock();
 
-    int sigma, HH;
+    int sigma, HH, equil_time, epoch;
+    double beta;
+    for(int i = 0; i < bin; i++){
+        if(!Tstart){
+            T[i] = Tstart + ((Tfin-Tstart)/(double)(bin))*(i+1);
+        } else{
+            T[i] = Tstart + ((Tfin-Tstart)/(double)(bin-1))*(i);
+        }
+    }
+
 
     for(int i = 0; i < bin; i++){ // i is bin
         Fliped_Step = 0;
         Total_Step = 0;
-        double T = (5/double(bin))*(i+1);
-        double beta = 1/T;
+
+        beta = 1/T[i];
 
         initialize(beta);
 
         // Basic equlibrium time is almost 1000 so that twice of that is enough
-        int equil_time = 2000;
+        equil_time = 2000;
 
         // Equilibrium time is larger when T is near Tc
-        if(T<2.4 || T>2.0) equil_time =10000;
+        if(T[i]<2.4 || T[i]>2.0) equil_time =10000;
 
         for(int j = 0; j < equil_time; j++){ // j is epoch
             calculate();
@@ -171,21 +184,22 @@ int main(){
         cout <<"idx: " << i << "||" << sigma << " " << HH << "\n";
 
         // Calculating result
-        int epoch = 18000;
+        epoch = 18000;
         for(int j = 0; j < epoch; j++){ // j is epoch
             calculate();
             
             value = measure();
             HH = value[0];
             sigma = value[1];
-           
+            cjack[i] = 
             res[i][0] += abs(sigma)/double(epoch);
-            res[i][1] += (sigma*sigma)/double(epoch);
-            res[i][2] += HH/double(epoch);
-            res[i][3] += (HH*HH)/double(epoch);
+            res[i][1] += (sigma/double(epoch)*sigma);
+            res[i][2] += (sigma/double(epoch)*sigma)*(sigma*sigma);
+            res[i][3] += HH/double(epoch);
+            res[i][4] += (HH/double(epoch)*HH);
         }
         m[i] = res[i][0]/N;
-        c[i] = (beta*beta)/N*(res[i][3]-(res[i][2]*res[i][2]));
+        c[i] = (beta*beta)/N*(res[i][4]-(res[i][3]*res[i][3]));
         cout << m[i] << " " << c[i] << " " << Fliped_Step << " " << Total_Step << '\n';
     }
     
@@ -211,10 +225,12 @@ int main(){
 
         myfile.open(NewFilename);
 
-        myfile << ",temperture,magnetization,specific heat,abs(sigma),sigma**2,HH,HH**2\n";
+        myfile << "idx,temperture,magnetization,specific heat,c dev,abs(sigma),sigma**2,sigma**4,HH,HH**2\n";
         for(int i = 0; i <bin; i++){
-            string temp = to_string(i) + "," + to_string((5/double(bin))*(i+1)) + "," + to_string(m[i]) + "," + to_string(c[i]) + ",";
-            temp = temp + to_string(res[i][0]) + "," + to_string(res[i][1]) + "," + to_string(res[i][2]) + "," + to_string(res[i][3]) + "\n";
+            string temp = to_string(i) + "," + to_string(T[i]) + "," + to_string(m[i]) + "," + to_string(c[i]) + ",";
+            temp = temp + to_string(res[i][0]) + "," + to_string(res[i][1]) + "," + to_string(res[i][2]) + ",";
+            temp = temp + to_string(res[i][3]) + "," + to_string(res[i][4]) + "\n";
+
             myfile << temp;
         }
         myfile.close();

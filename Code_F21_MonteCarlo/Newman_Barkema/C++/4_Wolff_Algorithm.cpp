@@ -248,7 +248,7 @@ int main(){
 
         myfile.open(NewFilename);
 
-        myfile << ",temperture,magnetization,specific heat,abs(sigma),sigma**2,HH,HH**2,size\n";
+        myfile << "idx,temperture,magnetization,specific heat,abs(sigma),sigma**2,HH,HH**2,size\n";
         for(int i = 0; i <bin; i++){
             string temp = to_string(i) + "," + to_string(Tstart + ((Tfin-Tstart)/double(bin))*(i+1)) + "," + to_string(m[i]) + "," + to_string(c[i]) + ",";
             temp = temp + to_string(res[i][0]) + "," + to_string(res[i][1]) + "," + to_string(res[i][2]) + "," + to_string(res[i][3]) + ",";
