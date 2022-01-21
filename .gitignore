@@ -79,3 +79,5 @@
 .tmp.driveupload/9686
 .tmp.driveupload/9690
 Code_F21_MonteCarlo/.vscode/settings.json
+*.exe
+*.csv
