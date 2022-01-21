@@ -9,7 +9,7 @@
 
 using namespace std;
 
-#define L 2
+#define L 3
 #define N (L*L)
 #define XNN 1
 #define YNN L

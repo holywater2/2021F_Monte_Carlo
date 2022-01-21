@@ -23,7 +23,7 @@
 
 using namespace std; 
 
-#define L 96
+#define L 100
 #define N (L*L)
 #define XNN 1
 #define YNN L
@@ -33,8 +33,8 @@ using namespace std;
 static string Filename = ".\\Result\\Wolff_c_"+to_string(L)+"_int"+to_string(bin);
 
 #define _init 1.01
-#define Tstart 2.2
-#define Tfin 2.35
+#define Tstart 0
+#define Tfin 5
 
 static short s[N]; // Square lattice configuration of 2D Ising model
 

@@ -20,7 +20,7 @@
 
 using namespace std;
 
-#define L 5 /*Parameter: lattice size*/
+#define L 100 /*Parameter: lattice size*/
 #define N (L*L)
 #define XNN 1
 #define YNN L
@@ -134,7 +134,6 @@ int main(){
     vector<int> value;
     vector<double> m(bin);
     vector<double> c(bin);
-    vector<double> cdelta(bin);
     vector<double> T(bin);
     vector<vector<double>> res(bin,vector<double>(5,0));
     string Tat = isTinf ? "inf" : "0";
@@ -159,7 +158,7 @@ int main(){
         }
     }
 
-
+    epoch = 18000;
     for(int i = 0; i < bin; i++){ // i is bin
         Fliped_Step = 0;
         Total_Step = 0;
@@ -184,14 +183,14 @@ int main(){
         cout <<"idx: " << i << "||" << sigma << " " << HH << "\n";
 
         // Calculating result
-        epoch = 18000;
+        epoch = 20000;
         for(int j = 0; j < epoch; j++){ // j is epoch
             calculate();
             
             value = measure();
             HH = value[0];
             sigma = value[1];
-            cjack[i] = 
+    
             res[i][0] += abs(sigma)/double(epoch);
             res[i][1] += (sigma/double(epoch)*sigma);
             res[i][2] += (sigma/double(epoch)*sigma)*(sigma*sigma);
@@ -200,8 +199,6 @@ int main(){
         }
         m[i] = res[i][0]/N;
         c[i] = (beta*beta)/N*(res[i][4]-(res[i][3]*res[i][3]));
-        cout << m[i] << " " << c[i] << " " << Fliped_Step << " " << Total_Step << '\n';
-    }
     
 
     // Save the data (Not real time process)
@@ -225,7 +222,7 @@ int main(){
 
         myfile.open(NewFilename);
 
-        myfile << "idx,temperture,magnetization,specific heat,c dev,abs(sigma),sigma**2,sigma**4,HH,HH**2\n";
+        myfile << "idx,temperture,magnetization,specific heat,abs(sigma),sigma**2,sigma**4,HH,HH**2,c_dev(bootstrap)\n";
         for(int i = 0; i <bin; i++){
             string temp = to_string(i) + "," + to_string(T[i]) + "," + to_string(m[i]) + "," + to_string(c[i]) + ",";
             temp = temp + to_string(res[i][0]) + "," + to_string(res[i][1]) + "," + to_string(res[i][2]) + ",";
