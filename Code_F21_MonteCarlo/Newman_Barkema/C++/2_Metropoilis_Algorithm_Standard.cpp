@@ -185,7 +185,7 @@ int main(){
         equil_time = 2000;
 
         // Equilibrium time is larger when T is near Tc
-        if(T[i]<2.4 || T[i]>2.0) equil_time =10000;
+        if(T[i]<2.4 || T[i]>2.0) equil_time =5000;
 
         for(int j = 0; j < equil_time; j++){ // j is epoch
             calculate();
