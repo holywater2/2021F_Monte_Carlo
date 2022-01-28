@@ -6,7 +6,15 @@
 // File & IO System
 #include <iostream>
 #include <fstream>
+#include <iomanip>
+
+#ifdef _WIN32
 #include <windows.h>
+#endif
+
+#ifdef linux
+#include <sys/stat.h>
+#endif
 // Data Structure
 #include <vector>
 #include <tuple>

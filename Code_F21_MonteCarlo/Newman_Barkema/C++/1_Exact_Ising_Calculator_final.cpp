@@ -5,9 +5,15 @@
 // File & IO System
 #include <iostream>
 #include <fstream>
-#include <windows.h>
-
 #include <iomanip>
+
+#ifdef _WIN32
+#include <windows.h>
+#endif
+
+#ifdef linux
+#include <sys/stat.h>
+#endif
 // Data Structure
 #include <vector>
 #include <tuple>
@@ -28,8 +34,14 @@ using namespace std;
 #define YNN L
 #define B 0
 #define J 1
-#define bin 40 
-static string Filename = ".\\Result\\Exact_c_"+to_string(L)+"_int"+to_string(bin);
+#define bin 40
+
+#ifdef _WIN32
+static string Filename = ".\\Result\\Exact_cpp_"+to_string(L)+"_int"+to_string(bin);
+#endif
+#ifdef linux
+static string Filename = "./Result/Exact_cpp_"+to_string(L)+"_int"+to_string(bin);
+#endif
 
 #define Tstart 0
 #define Tfin 5
@@ -82,14 +94,6 @@ void sweep(){
     int HH;
     double Temp,exp_HH;
     for(i = 0; i < N; i++){
-        // if((nn = i + XNN)%L == 0) nn -= L;
-        // sum = s[nn];
-        // if(((nn = i - XNN)-1)%L == 0) nn += L;
-        // sum += s[nn];
-        // if((nn = i + YNN) >= N) nn -= N;
-        // sum += s[nn];
-        // if((nn = i - YNN) < 0) nn += N;
-        // sum += s[nn];
 
         if((nn = i + XNN) == N) nn = 0;
         sum = s[nn];
@@ -159,15 +163,23 @@ int main(){
     initialize();
     generator_sym(1);
 
-    for(int i; i < bin; i++){
+    for(int i = 0; i < bin; i++){
         m[i] = ZM[i]/Z[i]/N;
         c[i] = (1/T[i]/T[i]/N)*(ZHH2[i]/Z[i]-(ZHH[i]/Z[i])*(ZHH[i]/Z[i]));
+        cout << m[i] << " " << c[i] << endl;
     }
 
     // Save the data (It's NOT real time saving process)
     bool save = true;
     if(save){
+        #ifdef _WIN32
         CreateDirectory("Result", NULL);
+        #endif
+
+        #ifdef linux
+        mkdir("Result", S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+        #endif
+
         ofstream myfile;
         string NewFilename = Filename + ".csv";
         ifstream f(NewFilename);

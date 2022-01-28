@@ -40,6 +40,7 @@ using namespace std;
 #define Tfin 5
 
 #ifdef _WIN32
+static string Filename = ".\\Result\\Metropolis_c_"+to_string(L)+"_int"+to_string(bin);
 #endif
 #ifdef linux
 static string Filename = "./Result/Metropolis_c_"+to_string(L)+"_int"+to_string(bin);
