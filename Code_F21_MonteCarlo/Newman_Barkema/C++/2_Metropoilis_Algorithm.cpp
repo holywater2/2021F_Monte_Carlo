@@ -6,7 +6,17 @@
 // File & IO System
 #include <iostream>
 #include <fstream>
+
+#ifdef _WIN32
 #include <windows.h>
+static string Filename = ".\\Result\\Metropolis_c_"+to_string(L)+"_int"+to_string(bin);
+#endif
+
+#ifdef linux
+#include <sys/stat.h>
+static string Filename = "./Result/Metropolis_c_"+to_string(L)+"_int"+to_string(bin);
+#endif
+
 // Data Structure
 #include <vector>
 #include <tuple>
@@ -20,7 +30,7 @@
 
 using namespace std;
 
-#define L 100 /*Parameter: lattice size*/
+#define L 5 /*Parameter: lattice size*/
 #define N (L*L)
 #define XNN 1
 #define YNN L
@@ -30,8 +40,6 @@ using namespace std;
 
 #define Tstart 0
 #define Tfin 5
-
-static string Filename = ".\\Result\\Metropolis_c_"+to_string(L)+"_int"+to_string(bin);
 
 static short s[N]; // Square lattice configuration of 2D Ising model
 static double prob[5]; // 1 1 exp 1 exp
@@ -199,13 +207,24 @@ int main(){
         }
         m[i] = res[i][0]/N;
         c[i] = (beta*beta)/N*(res[i][4]-(res[i][3]*res[i][3]));
+
+        // cout << m[i] << " " << c[i] << " " << " "<< Fliped_Step << " " << Total_Step << '\n';
+
+    }
     
 
     // Save the data (Not real time process)
     bool save = true;
 
     if(save){
+        #ifdef _WIN32
         CreateDirectory("Result", NULL);
+        #endif
+
+        #ifdef linux
+        mkdir("Result", S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+        #endif
+
         ofstream myfile;
         string NewFilename = Filename + ".csv";
         ifstream f(NewFilename);
