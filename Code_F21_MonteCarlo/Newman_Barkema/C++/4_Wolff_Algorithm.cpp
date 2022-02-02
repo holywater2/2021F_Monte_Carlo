@@ -6,8 +6,15 @@
 // File & IO System
 #include <iostream>
 #include <fstream>
-#include <windows.h>
 #include <iomanip>
+
+#ifdef _WIN32
+#include <windows.h>
+#endif
+
+#ifdef linux
+#include <sys/stat.h>
+#endif
 // Data Structure
 #include <vector>
 #include <tuple>
@@ -29,7 +36,13 @@ using namespace std;
 #define B 0
 #define J 1
 #define bin 25
-static string Filename = ".\\Result\\Wolff_c_"+to_string(L)+"_int"+to_string(bin);
+
+#ifdef _WIN32
+static string Filename = ".\\Result\\Metropolis_c_"+to_string(L)+"_int"+to_string(bin);
+#endif
+#ifdef linux
+static string Filename = "./Result/Metropolis_c_"+to_string(L)+"_int"+to_string(bin);
+#endif
 
 
 #define _init 1.01
@@ -230,7 +243,14 @@ int main(){
     // Save the data (It's NOT real time saving process)
     bool save = true;
     if(save){
+        #ifdef _WIN32
         CreateDirectory("Result", NULL);
+        #endif
+
+        #ifdef linux
+        mkdir("Result", S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+        #endif
+
         ofstream myfile;
         string NewFilename = Filename + ".csv";
         ifstream f(NewFilename);

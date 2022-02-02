@@ -40,6 +40,7 @@ using namespace std;
 #define Tfin 5
 
 #ifdef _WIN32
+static string Filename = ".\\Result\\Metropolis_c_"+to_string(L)+"_int"+to_string(bin);
 #endif
 #ifdef linux
 static string Filename = "./Result/Metropolis_c_"+to_string(L)+"_int"+to_string(bin);
@@ -184,7 +185,7 @@ int main(){
         equil_time = 2000;
 
         // Equilibrium time is larger when T is near Tc
-        if(T[i]<2.4 || T[i]>2.0) equil_time =10000;
+        if(T[i]<2.4 || T[i]>2.0) equil_time =5000;
 
         for(int j = 0; j < equil_time; j++){ // j is epoch
             calculate();

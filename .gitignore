@@ -81,3 +81,6 @@
 Code_F21_MonteCarlo/.vscode/settings.json
 *.exe
 *.csv
+*.out
+.vscode/launch.json
+.vscode/tasks.json
