@@ -159,7 +159,6 @@ int main(){
     cout << "-------------------------------------------------------------------------------------------" << "\n";
 
     clock_t start, finish;
-    double duration;
     start = clock();
 
     int sigma, HH, equil_time, epoch;
@@ -194,7 +193,7 @@ int main(){
         HH = value[0];
         sigma = value[1];
 
-        cout <<"idx: " << i << "||" << sigma << " " << HH << "\n";
+        cout <<"idx: " << i << "\t||" << sigma << "\t" << HH << "\n";
 
         // Calculating result
         epoch = 20000;
@@ -214,7 +213,7 @@ int main(){
         m[i] = res[i][0]/N;
         c[i] = (beta*beta)/N*(res[i][4]-(res[i][3]*res[i][3]));
 
-        // cout << m[i] << " " << c[i] << " " << " "<< Fliped_Step << " " << Total_Step << '\n';
+        cout << m[i] << " " << c[i] << " " << " "<< Fliped_Step << " " << Total_Step << '\n';
 
     }
     
