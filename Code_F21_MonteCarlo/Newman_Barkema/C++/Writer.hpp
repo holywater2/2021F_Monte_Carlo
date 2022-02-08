@@ -56,7 +56,7 @@ void Writer::MakeDirectory(){
     #endif // _WIN32
 
     #ifdef linux
-    mkdir(this->directory_name, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+    mkdir(this->directory_name.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
     #endif // linux
 }
 
