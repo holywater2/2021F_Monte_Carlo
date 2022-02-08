@@ -28,13 +28,13 @@
 
 using namespace std;
 
-#define L 5 /*Parameter: lattice size*/
+#define L 100 /*Parameter: lattice size*/
 #define N (L*L)
 #define XNN 1
 #define YNN L
 #define B 0
 #define J 1
-#define bin 40 /*Parametr: Change binning of temperature*/
+#define bin 25 /*Parametr: Change binning of temperature*/
 
 #define Tstart 0
 #define Tfin 5
@@ -184,7 +184,7 @@ int main(){
         equil_time = 2000;
 
         // Equilibrium time is larger when T is near Tc
-        if(T[i]<2.4 || T[i]>2.0) equil_time =5000;
+        if(T[i]<2.4 || T[i]>2.0) equil_time = 5000;
 
         for(int j = 0; j < equil_time; j++){ // j is epoch
             calculate();
@@ -196,7 +196,7 @@ int main(){
         cout <<"idx: " << i << "\t||" << sigma << "\t" << HH << "\n";
 
         // Calculating result
-        epoch = 20000;
+        epoch = 15000;
         for(int j = 0; j < epoch; j++){ // j is epoch
             calculate();
             

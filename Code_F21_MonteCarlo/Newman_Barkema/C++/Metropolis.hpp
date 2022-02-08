@@ -2,7 +2,7 @@
 #define ____METROPOLIS____ 
 
 // File & IO System
-// #include <iostream>
+#include <iostream>
 
 // Data Structure
 #include <vector>
@@ -65,7 +65,7 @@ class Model{
         int SweepHelical(int i);
         int BoundaryHelical(int i);
         duo Measure();
-        void Calculate(int _n = 0);
+        void Calculate(int _n = 0,bool Random = true);
         void IterateUntilEquilibrium(int equil_time);
 };
 
@@ -130,20 +130,12 @@ void Model::Initialize(double beta){
     for(int i = 0; i < N; i++){
         // T = 0 start
         sc[i] = 1;
-        // cout << i << " " << sc[i] << endl;
 
         // T = \inf start
         if(this->isTinf) this->sc[i] -= int(dis(gen)*2)*2;
     }
     this->ProbCalc(beta);
-    // for(int i = 0; i < N; i++){
-    //     cout << i << " " <<sc[i] << endl;
-    // }
 }
-
-// void Model::Initialize(int idx){
-//     this-> Initialzie(this-> BetaV[idx]);
-// }
 
 int Model::SweepHelical(int i){
     int nn, sum = 0;
@@ -187,15 +179,24 @@ duo Model::Measure(){
     return make_tuple(HH,sigma);
 }
 
-void Model::Calculate(int _n){
+void Model::Calculate(int _n, bool Random){
     int i, k, delta, n;
     n = !_n ? (this->N) : _n;
     double a;
     for(i = 0; i < n; i++){
-        // Sweep Randomly
-        k = (this->N)*dis(gen);
         // Sweep Sequential
-        // k = n
+        if(Random){
+            k = (this->N)*dis(gen);
+        } else if(n%2 == 0){
+            k = 2*i;
+            if(k < N) k = (int(k/L))%2 == 0 ? k+1 : k;
+            else k = (int(k/L))%2 == 0 ? k-N : k-N+1;
+            // cout << k << "\n";
+        } else{
+            k = 2*i >= N ? 2*i-N: 2*i;
+        }
+        // Sweep Randomly
+        
 
         delta = (this->SweepHelical(k))*(this->sc[k]);
         

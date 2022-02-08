@@ -38,10 +38,10 @@ using namespace std;
 #define bin 40
 
 #ifdef _WIN32
-static string Filename = ".\\Result\\Metropolis_c_"+to_string(L)+"_int"+to_string(bin);
+static string Filename = ".\\Result\\Wolff_c_"+to_string(L)+"_int"+to_string(bin);
 #endif
 #ifdef linux
-static string Filename = "./Result/Metropolis_c_"+to_string(L)+"_int"+to_string(bin);
+static string Filename = "./Result/Wolff_c_"+to_string(L)+"_int"+to_string(bin);
 #endif
 
 #define _init 1.01

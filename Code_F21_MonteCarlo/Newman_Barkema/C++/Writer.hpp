@@ -30,6 +30,8 @@ class Writer {
         void FindNextFileNum();
         void OpenNewFile();
         void WriteLine(string contents);
+        void WriteLine(double contents);
+        void WriteLine(int contents);
         void CloseNewFile();;
 };
 
@@ -45,6 +47,7 @@ Writer::Writer(string filename, string directory_name = "Result"){
     this-> MakeDirectory();
     this-> FindNextFileNum();
     this-> OpenNewFile();
+    cout << "Saving Start: " << this-> new_file_name << "\n";
 }
 
 void Writer::MakeDirectory(){
@@ -77,6 +80,16 @@ void Writer::WriteLine(string contents){
     myfile << contents;
 }
 
+void Writer::WriteLine(double contents){
+    // This assumes that there is no line break.
+    myfile << contents;
+}
+
+void Writer::WriteLine(int contents){
+    // This assumes that there is no line break.
+    myfile << contents;
+}
+
 void Writer::CloseNewFile(){
     this-> myfile.close();
     cout << "Save Completed: " << this-> new_file_name << "\n";
@@ -93,6 +106,8 @@ class FooWriter : Writer {
         void FindNextFileNum(){}
         void OpenNewFile(){}
         void WriteLine(string contents){}
+        void WriteLine(double contents){}
+        void WriteLine(int contents){}
         void CloseNewFile(){}
 };
 
