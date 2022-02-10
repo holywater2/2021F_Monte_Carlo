@@ -57,7 +57,8 @@ int main(){
     Writer modelW = Writer(kFilename);
     modelW.WriteLine("idx,temperture,magnetization,specific heat,abs(sigma),sigma**2,sigma**4,HH,HH**2,c_error\n");
 
-    int sigma, HH, equil_time, mcs = 1000000;
+    int equil_time, mcs = 10e6;
+    double MM, HH;
     double mcs_i = 1/double(mcs);
     double kNi = 1/double(kN);
 
@@ -89,23 +90,24 @@ int main(){
                 model.Calculate(0,random);
 
                 value = model.Measure_fast();
-                HH = get<0>(value);
-                sigma =  get<1>(value);
-                
-                model.res[0] += abs(sigma)*mcs_i;
-                model.res[1] += (sigma*mcs_i*sigma);
-                model.res[2] += (sigma*mcs_i*sigma)*(sigma*sigma);
-                model.res[3] += HH*mcs_i;
-                model.res[4] += HH*mcs_i*HH;
+
+                HH = get<0>(value)/(double) kL;        // = E
+                MM = abs(get<1>(value))/(double)kN;    // = M
+                model.res[0] += MM*mcs_i;              // = <m>
+                model.res[1] += (MM*mcs_i*MM);         // = <m^2>
+                model.res[2] += (MM*mcs_i*MM)*(MM*MM); // = <m^4>
+                model.res[3] += HH*mcs_i;              // = <E>/sqrt(N)
+                model.res[4] += HH*mcs_i*HH;           // = <E^2>/N
+
                 Jackknife_HH[j/jB] += HH;
                 Jackknife_HH2[j/jB] += HH*HH;
             }
             
             model.MV[i] = model.res[0]/kN;
-            model.CV[i] = (model.BetaV[i]*model.BetaV[i])/kN*(model.res[4]-model.res[3]*model.res[3]);        
+            model.CV[i] = (model.BetaV[i]*model.BetaV[i])*(model.res[4]-model.res[3]*model.res[3]);        
 
             for(int j = 0; j < mcs/jB; j++){
-                Jackknife[j] = (model.BetaV[i]*model.BetaV[i])/kN*((mcs*model.res[4]-Jackknife_HH2[j])/(mcs-jB) \
+                Jackknife[j] = (model.BetaV[i]*model.BetaV[i])*((mcs*model.res[4]-Jackknife_HH2[j])/(mcs-jB) \
                             - (mcs*model.res[3]-Jackknife_HH[j])/(mcs-jB)*(mcs*model.res[3]-Jackknife_HH[j])/(mcs-jB));
                 c_error += (Jackknife[j]-model.CV[i])*(Jackknife[j]-model.CV[i]);
             }

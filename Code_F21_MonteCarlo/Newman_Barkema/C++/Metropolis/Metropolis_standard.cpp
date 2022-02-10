@@ -14,6 +14,7 @@ const double Tsrt = 0;
 const double Tfin = 5;
 
 double isTinf = false;
+const bool random = true;
 
 #ifdef _WIN32
 static string kFilename = ".\\Result\\Metropolis_c_"+to_string(kL)+"_int"+to_string(kBin);
@@ -29,10 +30,11 @@ clock_t __start__, __finish__;
 
 void Greetings(){
     string Tat = isTinf ? "inf" : "0";
+    string isRandom = random ? "Random" : "Chess board";
 
     cout << "Metropolis Algorithm\n";
     cout << "Radnomness test(seed): " << seed << '\n';
-    cout << "L = " << kL << ", " << "bin = " << kBin << ", Start T at " << Tat << "\n";
+    cout << "L = " << kL << ", " << "bin = " << kBin << ", Start T at " << Tat <<", selecting sites: " <<  isRandom <<"\n";
     cout << "------------------------------------------------------------------------------------------------------------------" << "\n";
     cout << "--index--||---Temp----||EQ:sig------HH----------||magnetization---specific heat||Fliped Step------Total Step------" << "\n";
     cout << "------------------------------------------------------------------------------------------------------------------" << endl;
@@ -83,7 +85,7 @@ int main(){
 
                 value = model.Measure_fast();
                 HH = get<0>(value)/(double) kL;        // = E
-                MM = abs(get<1>(value))/(double)kN;                    // = M
+                MM = abs(get<1>(value))/(double)kN;    // = M
                 model.res[0] += MM*mcs_i;              // = <m>
                 model.res[1] += (MM*mcs_i*MM);         // = <m^2>
                 model.res[2] += (MM*mcs_i*MM)*(MM*MM); // = <m^4>
