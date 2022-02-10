@@ -1,5 +1,5 @@
 #include "Metropolis.hpp"
-#include "./Writer.hpp"
+#include "../Writer.hpp"
 
 #include <iostream>
 #include <iomanip>
@@ -37,6 +37,7 @@ void Greetings(){
     cout << "--index--||---Temp----||EQ:sig------HH----------||magnetization---specific heat||Fliped Step------Total Step------" << "\n";
     cout << "------------------------------------------------------------------------------------------------------------------" << endl;
     cout << fixed <<setprecision(6);
+    cout << showpos;
 
     __start__ = clock();
 }
@@ -52,48 +53,45 @@ int main(){
     for(int gg = 0; gg < 1; gg++){
         Model model = Model(args);
         Writer modelW = Writer(kFilename+"_ensemble");
-        modelW.WriteLine("idx,temperture,magnetization,specific heat,abs(sigma),sigma**2,sigma**4,HH,HH**2,m_error\n");
+        modelW.WriteLine("idx,temperture,magnetization,specific heat,abs(mm),mm**2,mm**4,HH/L,HH**2/L\n");
 
-        int sigma, HH, equil_time, mcs = 15000;
+        int equil_time, mcs = 1000;
+        double MM, HH;
         double mcs_i = 1/double(mcs);
         double kNi = 1/double(kN);
 
-        cout << showpos;
 
         for(int i = 0; i < kBin; i++){
             model.Initialize(model.BetaV[i]);
             model.res = vector<double>(5,0);
 
-            equil_time = 2000;
+            equil_time = 200;
 
-            if(model.TV[i]<=2.4 || model.TV[i]>=2.0) equil_time =10000;
+            if(model.TV[i]<=2.4 || model.TV[i]>=2.0) equil_time =1000;
 
             model.IterateUntilEquilibrium(2000);
 
             duo value = model.Measure();
             HH = get<0>(value);
-            sigma =  get<1>(value);
+            MM =  get<1>(value);
 
             cout <<"idx: " << left << setw(4) << i << "|| " << left << setw(10) << model.TV[i];
-            cout << "|| "  << left << setw(9) << sigma/(double)kN << "  " << left << setw(12) << HH << "|| ";
+            cout << "|| "  << left << setw(9) << MM/(double)kN << "  " << left << setw(12) << int(HH) << "|| ";
 
             for(int j = 0; j < mcs; j++){ // mcs 15000
                 model.Calculate();
 
                 value = model.Measure_fast();
-                HH = get<0>(value);
-                sigma =  get<1>(value);
-                
-                model.res[0] += abs(sigma)*mcs_i;
-                model.res[1] += (sigma*mcs_i*sigma);
-                model.res[2] += (sigma*mcs_i*sigma)*(sigma*sigma);
-                model.res[3] += HH*mcs_i;
-                model.res[4] += HH*mcs_i*HH;
-                
+                HH = get<0>(value)/(double) kL;        // = E
+                MM = abs(get<1>(value))/(double)kN;                    // = M
+                model.res[0] += MM*mcs_i;              // = <m>
+                model.res[1] += (MM*mcs_i*MM);         // = <m^2>
+                model.res[2] += (MM*mcs_i*MM)*(MM*MM); // = <m^4>
+                model.res[3] += HH*mcs_i;              // = <E>/sqrt(N)
+                model.res[4] += HH*mcs_i*HH;           // = <E^2>/N
             }
-
-            model.MV[i] = model.res[0]/kN;
-            model.CV[i] = (model.BetaV[i]*model.BetaV[i])/kN*(model.res[4]-model.res[3]*model.res[3]);        
+            model.MV[i] = model.res[0];
+            model.CV[i] = (model.BetaV[i]*model.BetaV[i])*(model.res[4]-model.res[3]*model.res[3]);
 
             cout << left << setw(13) << model.MV[i] << "  " << right << setw(13) << model.CV[i] << "|| ";
             cout << left << setw(14) << model.Fliped_Step << "  " << left << setw(10) << model.Total_Step << endl;
