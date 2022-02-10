@@ -35,6 +35,8 @@ class Model{
         const int Bin;
         const int B;
         const int J;
+        int HH;
+        int sigma;
 
         // #ifdef _WIN32
         // static string Filename = ".\\Result\\Metropolis_c_"+to_string(L)+"_int"+to_string(bin);
@@ -65,8 +67,9 @@ class Model{
         int SweepHelical(int i);
         int BoundaryHelical(int i);
         duo Measure();
+        duo Measure_fast();
         void Calculate(int _n = 0,bool Random = true);
-        void IterateUntilEquilibrium(int equil_time);
+        void IterateUntilEquilibrium(int equil_time,bool random = true);
 };
 
 Model::Model(int L, int bin, int B, int J, int Tsrt, int Tfin, bool isTinf) :L(L), N(L*L), Bin(bin), B(B), J(J){
@@ -175,9 +178,15 @@ duo Model::Measure(){
     }
     
     HH = -res-B*sigma;
-
+    this->HH = HH;
+    this->sigma = sigma;
     return make_tuple(HH,sigma);
 }
+
+duo Model::Measure_fast(){
+    return make_tuple(this->HH,this->sigma);
+}
+
 
 void Model::Calculate(int _n, bool Random){
     int i, k, delta, n;
@@ -203,19 +212,18 @@ void Model::Calculate(int _n, bool Random){
         a = dis(gen);
         this->Total_Step++;
 
-        if(delta <= 0){
+        if((delta <= 0) || (a < prob[delta])){
             this->Fliped_Step++;
-            this->sc[k] = -(this->sc[k]);
-        } else if(a < prob[delta]){
-            this->Fliped_Step++;
-            this->sc[k] = -(this->sc[k]);
+            this->sc[k] *= -1;
+            this->sigma += 2*(this->sc[k]);
+            this->HH += 2*delta;
         }
     }
 }
 
-void Model::IterateUntilEquilibrium(int equil_time){
+void Model::IterateUntilEquilibrium(int equil_time,bool random){
     for(int j = 0; j < equil_time; j++)
-        Calculate();
+        Calculate(0,random);
 }
 
 #endif // ____METROPOLIS____ 

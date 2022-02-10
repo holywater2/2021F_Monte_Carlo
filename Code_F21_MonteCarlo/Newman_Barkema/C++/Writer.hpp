@@ -26,7 +26,9 @@ class Writer {
         string directory_name;
         void MakeDirectory();
         // Wirter(string filename);
+        // ~Writer();
         Writer(string filename, string directory_name);
+        // Writer(bool Foo){/*Intentialnally empty for FooWriter*/};
         void FindNextFileNum();
         void OpenNewFile();
         void WriteLine(string contents);
@@ -49,6 +51,9 @@ Writer::Writer(string filename, string directory_name = "Result"){
     this-> OpenNewFile();
     cout << "Saving Start: " << this-> new_file_name << "\n";
 }
+// Writer::~Writer(){
+//     this-> CloseNewFile();
+// }
 
 void Writer::MakeDirectory(){
     #ifdef _WIN32
@@ -102,7 +107,8 @@ class FooWriter : Writer {
         string new_file_name;
         string directory_name;
         void MakeDirectory(){}
-        FooWriter(string filename, string directory_name = "Result") : Writer(filename, directory_name) {}
+        // FooWriter(string filename, string directory_name = "Result") : Writer(true) {}
+        FooWriter(string filename, string directory_name = "Result") : Writer(filename,directory_name) {}
         void FindNextFileNum(){}
         void OpenNewFile(){}
         void WriteLine(string contents){}

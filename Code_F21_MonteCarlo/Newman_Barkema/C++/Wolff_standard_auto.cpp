@@ -10,8 +10,8 @@ const int kBin = 25; /*Parametr: Change binning of temperature*/
 const int kB = 0;
 const int kJ = 1;
 
-const double Tsrt = 2.0;
-const double Tfin = 2.6;
+const double Tsrt = 2.2;
+const double Tfin = 2.4;
 
 double isTinf = false;
 
@@ -50,68 +50,72 @@ void Farewell(){
 int main(){
     Greetings();
     
-    Model model = Model(args);
-    Writer modelW = Writer(kFilename + "_no_equi");
-    Writer modelW2 = Writer(kFilename + "_auto");
+    for(int g = 0; g < 8; g++){
+        Model model = Model(args);
+        Writer modelW = Writer(kFilename + "_no_equi2");
+        Writer modelW2 = Writer(kFilename + "_auto2");
 
-    modelW.WriteLine("idx,temperture,magnetization,specific heat,abs(sigma),sigma**2,sigma**4,HH,HH**2,m_error\n");
+        modelW.WriteLine("idx,temperture,magnetization,specific heat,abs(sigma),sigma**2,sigma**4,HH,HH**2,m_error\n");
 
-    int HH, equil_time, mcs = 15000;
-    double sigma;
-    double mcs_i = 1/double(mcs);
-    double kNi = 1/double(kN);
+        int HH, equil_time, mcs = 1500;
+        double sigma;
+        double mcs_i = 1/double(mcs);
+        double kNi = 1/double(kN);
 
-    cout << showpos;
+        cout << showpos;
 
-    for(int i = 0; i < kBin; i++){
-        model.Initialize(model.BetaV[i]);
-        model.res = vector<double>(5,0);
+        for(int i = 0; i < kBin; i++){
+            model.Initialize(model.BetaV[i]);
+            model.res = vector<double>(5,0);
+    
+            // if(model.TV[i]<2.4 || model.TV[i]>2.0) equil_time =3000;
+            // model.IterateUntilEquilibrium(2000);
 
-        // if(model.TV[i]<2.4 || model.TV[i]>2.0) equil_time =3000;
-        // model.IterateUntilEquilibrium(2000);
-
-        duo value = model.Measure();
-        HH = get<0>(value);
-        sigma =  get<1>(value);
-
-        cout <<"idx: " << i << "\t|| " << model.TV[i] << "\t|| " << sigma << "\t" << HH << setw(3) << "|| ";
-        double size, step;
-        for(double j = 0; j < mcs;){ // mcs 15000
-            size = model.Calculate();
-            step = size/(double)kN;
-            j += step;
-            step /= mcs;
-
-            value = model.Measure();
+            duo value = model.Measure();
             HH = get<0>(value);
-            sigma =  get<1>(value)/(double)kN;
-            
-            model.res[0] += abs(sigma)*step;
-            model.res[1] += (sigma*step*sigma);
-            model.res[2] += (sigma*step*sigma)*(sigma*sigma);
-            model.res[3] += HH*step/(double)kL;
-            model.res[4] += HH*step*HH/(double)kN;
+            sigma =  get<1>(value);
 
+            cout <<"idx: " << i << " \t|| " << model.TV[i] << "\t|| " << sigma << "\t" << HH << setw(3) << "|| ";
+            modelW2.WriteLine(model.TV[i]);
+           
+            double size, step;
+            for(double j = 0; j < mcs;){ // mcs 15000
+                size = model.Calculate();
+                step = size/(double)kN;
+                j += step;
+                step /= mcs;
+
+                value = model.Measure();
+                HH = get<0>(value);
+                sigma =  get<1>(value)/(double)kN;
+                
+                model.res[0] += abs(sigma)*step;
+                model.res[1] += (sigma*step*sigma);
+                model.res[2] += (sigma*step*sigma)*(sigma*sigma);
+                model.res[3] += HH*step/(double)kL;
+                model.res[4] += HH*step*HH/(double)kN;
+
+                modelW2.WriteLine(",");
+                modelW2.WriteLine(sigma);
+            }
             modelW2.WriteLine(",");
-            modelW2.WriteLine(sigma*kNi);
+            modelW2.WriteLine(model.Fliped_Step/(double)kN/model.Total_Step);
+            modelW2.WriteLine("\n");
+
+            model.MV[i] = model.res[0];
+            model.CV[i] = (model.BetaV[i]*model.BetaV[i])*(model.res[4]-model.res[3]*model.res[3]);        
+
+
+            cout << model.MV[i] << "\t" << model.CV[i] << "\t" << model.Fliped_Step << right << setw(10) << "\t" << model.Total_Step << "\t" << (model.Fliped_Step/(double)kN/model.Total_Step) << endl;
+            
+            string temp = to_string(i) + "," + to_string(model.TV[i]) + "," + to_string(model.MV[i]) + "," + to_string(model.CV[i]) + ",";
+            temp = temp + to_string(model.res[0]) + "," + to_string(model.res[1]) + "," + to_string(model.res[2]) + ",";
+            temp = temp + to_string(model.res[3]) + "," + to_string(model.res[4]) + "\n";
+            modelW.WriteLine(temp);
         }
-        modelW2.WriteLine(",");
-        modelW2.WriteLine((model.Fliped_Step/model.Total_Step/kN);
-        modelW2.WriteLine("\n");
-
-        model.MV[i] = model.res[0];
-        model.CV[i] = (model.BetaV[i]*model.BetaV[i])*(model.res[4]-model.res[3]*model.res[3]);        
-
-
-        cout << model.MV[i] << "\t" << model.CV[i] << "\t" << model.Fliped_Step << right << setw(10) << "\t" << model.Total_Step << "\t" << ((model.Fliped_Step/(double)count)/kN) << endl;
-        
-        string temp = to_string(i) + "," + to_string(model.TV[i]) + "," + to_string(model.MV[i]) + "," + to_string(model.CV[i]) + ",";
-        temp = temp + to_string(model.res[0]) + "," + to_string(model.res[1]) + "," + to_string(model.res[2]) + ",";
-        temp = temp + to_string(model.res[3]) + "," + to_string(model.res[4]) + "\n";
-        modelW.WriteLine(temp);
+        modelW.CloseNewFile();
+        modelW2.CloseNewFile();
     }
-    modelW.CloseNewFile();
-    modelW2.CloseNewFile();
 
     Farewell();
 }
