@@ -3,6 +3,7 @@
 
 // File & IO System
 // #include <iostream>
+#include <iostream>
 
 // Data Structure
 #include <vector>
@@ -26,6 +27,9 @@ static long unsigned int seed = static_cast<long unsigned int>(time(0));
 static mt19937 gen(seed); // Standard mersenne_twister_engine seeded with time()
 static uniform_real_distribution<> dis(0.0, 1.0);
 
+//In 2D Ising model => 2/log(1+sqrt(2))
+const double T_crit = 2.269185; 
+
 typedef tuple<int,int> duo;
 
 class Model{ 
@@ -35,9 +39,13 @@ class Model{
         const int Bin;
         const int B;
         const int J;
+        bool isTinf;
+
         const static int init = 1.01;
-        int XNN = 1;
-        int YNN; 
+        const int XNN = 1;
+        const int YNN; 
+
+        clock_t __start__, __finish__;
 
         // #ifdef _WIN32
         // static string Filename = ".\\Result\\Metropolis_c_"+to_string(L)+"_int"+to_string(bin);
@@ -59,9 +67,14 @@ class Model{
         unsigned long Total_Step  = 0;
         unsigned long Calc_call = 0;
 
-        bool isTinf;
-        Model(int L, int bin, int B, int J, int Tsrt, int Tfin, bool isTinf);
+        Model(int L, int bin, double B, double J, double Tsrt, double Tfin, bool isTinf);
         Model(vector<double> args);
+        ~Model(){
+            __finish__ = clock();
+            cout << "------------------------------------------------------------------------------------------------------------------\n";
+            cout << "Model calculation finished. Spent time: " << (double)(__finish__-__start__)/CLOCKS_PER_SEC << "\n";
+            cout << "------------------------------------------------------------------------------------------------------------------\n";
+        }
         void ProbCalc(double beta);
         void Initialize(double beta);
         // void Initialzie(int idx);
@@ -73,7 +86,7 @@ class Model{
         void IterateUntilEquilibrium(int equil_time);
 };
 
-Model::Model(int L, int bin, int B, int J, int Tsrt, int Tfin, bool isTinf) :L(L), N(L*L), Bin(bin), B(B), J(J){
+Model::Model(int L, int bin, double B, double J, double Tsrt, double Tfin, bool isTinf) :L(L), N(L*L), Bin(bin), B(B), J(J), YNN(L){
     this-> isTinf = isTinf;
     this-> sc = new short[N];
 
@@ -82,32 +95,7 @@ Model::Model(int L, int bin, int B, int J, int Tsrt, int Tfin, bool isTinf) :L(L
     this-> TV = vector<double>(Bin);
     this-> BetaV = vector<double>(Bin);
 
-    for(int i = 0; i < bin; i++){ 
-        if(!Tsrt){
-            this->TV[i] = Tsrt + ((Tfin-Tsrt)/(double)(bin))*(i+1);
-        } else if(bin == 1){
-            this->TV[i] = Tsrt;
-        } else {
-            this->TV[i] = Tsrt + ((Tfin-Tsrt)/(double)(bin-1))*(i);
-        }
-        this->BetaV[i] = 1/TV[i];
-    }
-}
-
-Model::Model(vector<double> args) :L(args[0]), N(L*L), Bin(args[1]), B(args[2]), J(args[3]){
-    this-> isTinf = args[6];
-    this-> sc = new short[N];
-
-    this-> MV = vector<double>(Bin);
-    this-> CV = vector<double>(Bin);
-    this-> TV = vector<double>(Bin);
-    this-> BetaV = vector<double>(Bin);
-
-    YNN = L;
-
-    double Tsrt = args[4];
-    double Tfin = args[5];
-    double bin  = args[1];
+    __start__ = clock();
 
     for(int i = 0; i < bin; i++){ 
         if(!Tsrt){
@@ -121,6 +109,7 @@ Model::Model(vector<double> args) :L(args[0]), N(L*L), Bin(args[1]), B(args[2]),
     }
 }
 
+Model::Model(vector<double> args): Model(args[0],args[1],args[2],args[3],args[4],args[5],args[6]){}
 
 void Model::ProbCalc(double beta){
     this->prob = 1-exp(-2*beta*J);
@@ -134,20 +123,13 @@ void Model::Initialize(double beta){
     for(int i = 0; i < N; i++){
         // T = 0 start
         sc[i] = 1;
-        // cout << i << " " << sc[i] << endl;
 
         // T = \inf start
         if(this->isTinf) this->sc[i] -= int(dis(gen)*2)*2;
     }
     this->ProbCalc(beta);
-    // for(int i = 0; i < N; i++){
-    //     cout << i << " " <<sc[i] << endl;
-    // }
-}
 
-// void Model::Initialize(int idx){
-//     this-> Initialzie(this-> BetaV[idx]);
-// }
+}
 
 int Model::SweepHelical(int i){
     int nn, sum = 0;

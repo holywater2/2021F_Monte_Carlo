@@ -1,17 +1,18 @@
 #include "Wolff.hpp"
-#include "Writer.hpp"
+#include "../Writer.hpp"
 
 #include <iostream>
 #include <iomanip>
 
-const int kL = 200; /*Parameter: lattice size*/
+const int kL = 100; /*Parameter: lattice size*/
 const int kN = kL*kL;
 const int kBin = 25; /*Parametr: Change binning of temperature*/
 const int kB = 0;
 const int kJ = 1;
 
-const double Tsrt = 2.2;
-const double Tfin = 2.4;
+// T_crit ~ 2.269
+const double Tsrt = 2.200;
+const double Tfin = 2.350;
 
 double isTinf = false;
 
@@ -55,7 +56,7 @@ int main(){
         Writer modelW = Writer(kFilename+"final");
         modelW.WriteLine("idx,temperture,magnetization,specific heat,abs(sigma),sigma**2,sigma**4,HH,HH**2,m_error\n");
 
-        int HH, equil_time, mcs = 4000;
+        int HH, equil_time, mcs = 1e5;
         double sigma;
         double mcs_i = 1/double(mcs);
         double kNi = 1/double(kN);

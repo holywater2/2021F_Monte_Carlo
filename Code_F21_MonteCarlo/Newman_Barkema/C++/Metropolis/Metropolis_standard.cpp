@@ -4,7 +4,7 @@
 #include <iostream>
 #include <iomanip>
 
-const int kL = 100; /*Parameter: lattice size*/
+const int kL = 10; /*Parameter: lattice size*/
 const int kN = kL*kL;
 const int kBin = 25; /*Parametr: Change binning of temperature*/
 const int kB = 0;
@@ -46,8 +46,8 @@ void Greetings(){
 
 void Farewell(){
     __finish__ = clock();
-    cout << "Program Exit. Spent time: " << (double)(__finish__-__start__)/CLOCKS_PER_SEC << "\n";
-    cout << "-------------------------------------------------------------------------------------------";
+    cout << "Program Exit. Total Spent time: " << (double)(__finish__-__start__)/CLOCKS_PER_SEC << "\n";
+    cout << "------------------------------------------------------------------------------------------------------------------";
 }
 
 int main(){
