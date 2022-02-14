@@ -30,7 +30,7 @@ static string kFilename = "./Result/Wolff_c_"+to_string(kL)+"_int"+to_string(kBi
 #endif //linux
 
 
-vector<double> args = {kL,kBin,kB,kJ,Tsrt,Tfin,isTinf};
+vector<double> args = {(double) kL,kBin,kB,kJ,Tsrt,Tfin,isTinf};
 
 clock_t __start__, __finish__;
 
@@ -45,35 +45,36 @@ void Greetings(){
     cout << "------------------------------------------------------------------------------------------------------------------" << endl;
     cout << fixed <<setprecision(6);
 
+    signal(SIGSEGV, &handler);
+    signal(SIGINT, &handler);
+
     __start__ = clock();
 }
 
 void Farewell(int N = 0){
     __finish__ = clock();
     if(!N)
-        cout << "\nProgram Abonormal Exit. Spent time: " << (double)(__finish__-__start__)/CLOCKS_PER_SEC << "\n";
+        cout << "\nProgram Abonormally Exit. Spent time: " << (double)(__finish__-__start__)/CLOCKS_PER_SEC << "\n";
     else
         cout << "Program Exit Exit. Spent time: " << (double)(__finish__-__start__)/CLOCKS_PER_SEC << "\n";
-    cout << "-------------------------------------------------------------------------------------------";
+    cout << "-------------------------------------------------------------------------------------------\n";
 }
 
 void handler(int A)
 {
+    cout << endl;
     Farewell();
     exit(A);
 }
 
 int main(){
-    signal(SIGSEGV, &handler);
-    signal(SIGINT, &handler);
-
+    Greetings();
 
     vector<int> kLL = {200};
 
     for(int gg = 0; gg < 1; gg++){
         kL = kLL[gg];
         kN = kL*kL;
-        Greetings();
     
         vector<double> args = {(double) kL,kBin,kB,kJ,Tsrt,Tfin,isTinf};
         Model model = Model(args);
