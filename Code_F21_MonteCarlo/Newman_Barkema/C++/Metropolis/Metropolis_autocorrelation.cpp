@@ -1,5 +1,5 @@
 #include "Metropolis.hpp"
-#include "Writer.hpp"
+#include "../Writer.hpp"
 
 #include <iostream>
 #include <iomanip>
@@ -10,8 +10,8 @@ const int kBin = 25; /*Parametr: Change binning of temperature*/
 const int kB = 0;
 const int kJ = 1;
 
-const int Tsrt = 0;
-const int Tfin = 5;
+const double Tsrt = 0;
+const double Tfin = 5;
 
 double isTinf = false;
 

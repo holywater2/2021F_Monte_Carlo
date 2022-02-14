@@ -7,6 +7,9 @@
 #include <stdlib.h>
 #include <string>
 
+// Error catch
+#include <signal.h>
+#include <cstdlib>
 
 #ifdef _WIN32
 #include <windows.h>
@@ -14,6 +17,8 @@
 #ifdef linux
 #include <sys/stat.h>
 #endif // linux
+
+
 
 
 using namespace std;

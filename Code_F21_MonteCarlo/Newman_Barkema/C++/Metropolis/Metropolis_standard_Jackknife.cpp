@@ -1,5 +1,5 @@
 #include "Metropolis.hpp"
-#include "Writer.hpp"
+#include "../Writer.hpp"
 
 #include <iostream>
 #include <iomanip>
@@ -13,8 +13,8 @@ const int kJ = 1;
 const double Tsrt = 0;
 const double Tfin = 5;
 
-const bool random = true;
 const double isTinf = false;
+const bool random = true;
 
 #ifdef _WIN32
 static string kFilename = ".\\Result\\Metropolis_c_"+to_string(kL)+"_int"+to_string(kBin);
@@ -75,10 +75,10 @@ int main(){
 
             duo value = model.Measure();
             HH = get<0>(value);
-            sigma =  get<1>(value);
+            MM =  get<1>(value);
 
             cout <<"idx: " << left << setw(4) << i << "|| " << left << setw(10) << model.TV[i];
-            cout << "|| "  << left << setw(9) << sigma/(double)kN << "  " << left << setw(12) << HH << "|| ";
+            cout << "|| "  << left << setw(9) << MM/(double)kN << "  " << left << setw(12) << HH << "|| ";
 
             int jB = 100;
             vector<double> Jackknife = vector<double>(mcs/jB,0);

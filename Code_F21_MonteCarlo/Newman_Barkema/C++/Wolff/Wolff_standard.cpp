@@ -42,13 +42,25 @@ void Greetings(){
     __start__ = clock();
 }
 
-void Farewell(){
+void Farewell(int N = 0){
     __finish__ = clock();
-    cout << "Program Exit. Spent time: " << (double)(__finish__-__start__)/CLOCKS_PER_SEC << "\n";
-    cout << "-------------------------------------------------------------------------------------------";
+    if(!N)
+        cout << "\nProgram Abonormally Exit. Spent time: " << (double)(__finish__-__start__)/CLOCKS_PER_SEC << "\n";
+    else
+        cout << "Program Exit Exit. Spent time: " << (double)(__finish__-__start__)/CLOCKS_PER_SEC << "\n";
+    cout << "-------------------------------------------------------------------------------------------\n";
+}
+
+void handler(int A)
+{
+    cout << endl;
+    Farewell();
+    exit(A);
 }
 
 int main(){
+    signal(SIGSEGV, &handler);
+    signal(SIGINT, &handler);
     Greetings();
     
     for(int gg = 0; gg < 8; gg++){

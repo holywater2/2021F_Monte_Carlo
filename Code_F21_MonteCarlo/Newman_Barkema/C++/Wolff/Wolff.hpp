@@ -28,7 +28,7 @@ static mt19937 gen(seed); // Standard mersenne_twister_engine seeded with time()
 static uniform_real_distribution<> dis(0.0, 1.0);
 
 //In 2D Ising model => 2/log(1+sqrt(2))
-const double T_crit = 2.269185; 
+const double T_CRIT = 2.269185; 
 
 typedef tuple<int,int> duo;
 
